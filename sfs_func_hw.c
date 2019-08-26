@@ -1,7 +1,5 @@
 //
 // Simple FIle System
-// Student Name : 신재협
-// Student Number : B411114
 //
 //
 #include <stdio.h>
