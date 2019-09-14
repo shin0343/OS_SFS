@@ -272,7 +272,6 @@ void sfs_touch(const char *path)
 		return;
 	}
 
-	//printf("nsd:%d\tk:%d\tl:%d\n",nsd,k,l);
 	//block access
 	disk_read(sd_real, si.sfi_direct[k]); //현재 디렉토리의 디렉토리엔트리들 read
 
@@ -292,8 +291,6 @@ void sfs_touch(const char *path)
 //1단계1
 void sfs_cd(const char *path)
 {
-	//printf("Not Implemented\n");
-
 	if (path == NULL)
 	{
 		sd_cwd.sfd_ino = 1; //init at root
@@ -456,7 +453,7 @@ void sfs_ls(const char *path) //매개변수: path에 대해 ls 해당하는 pat
 		//for consistency
 		assert(si.sfi_type == SFS_TYPE_DIR); //디렉토리 타입인지 판별. 아니라면 종료됨.
 
-		nsd = si.sfi_size / sizeof(struct sfs_dir); //nsd=si.sfi_size/sizeof(struct sfs_dir); //nsd은 해당 inode의 디렉토리 엔트리 수
+		nsd = si.sfi_size / sizeof(struct sfs_dir); // //nsd은 해당 inode의 디렉토리 엔트리 수
 		k = nsd / SFS_DENTRYPERBLOCK;				//k번째 다이렉트 사용
 		l = nsd % SFS_DENTRYPERBLOCK;				//k번째 다이렉트에 l개 엔트리 있음
 
@@ -469,8 +466,6 @@ void sfs_ls(const char *path) //매개변수: path에 대해 ls 해당하는 pat
 				if (!strcmp(sd[i].sfd_name, path)) //원하는 디렉토리 찾음
 				{
 					//block access
-					//disk_read( sd_tmp, si_tmp.sfi_direct[j] ); //해당 inode의 블록을 sd로 가져옴. sd[0]은 현재 디렉토리,sd[1]은 부모 디렉토리
-
 					if (si_tmp.sfi_type == SFS_TYPE_FILE) //st_tmp가 파일의 inode라면 파일 이름 출력
 					{
 						printf("%s\n", sd[i].sfd_name);
@@ -478,7 +473,7 @@ void sfs_ls(const char *path) //매개변수: path에 대해 ls 해당하는 pat
 					}
 					swch = 1;
 
-					nsd_tmp = si_tmp.sfi_size / sizeof(struct sfs_dir); //sizeof(sd_tmp)/sizeof(struct sfs_dir);
+					nsd_tmp = si_tmp.sfi_size / sizeof(struct sfs_dir);
 					k2 = nsd_tmp / SFS_DENTRYPERBLOCK;
 					l2 = nsd_tmp % SFS_DENTRYPERBLOCK;
 
@@ -578,8 +573,6 @@ void sfs_ls(const char *path) //매개변수: path에 대해 ls 해당하는 pat
 
 void sfs_mkdir(const char *org_path)
 {
-	//printf("Not Implemented\n");
-
 	int i, j, k, l, nsd, bbnum_tmp, parent_ino;
 	struct sfs_dir sd[SFS_DENTRYPERBLOCK], sd_tmp[SFS_DENTRYPERBLOCK], sd_tmp2[SFS_DENTRYPERBLOCK]; //sfs_dir구조체 배열 = 블록
 	struct sfs_inode si, si_tmp;
@@ -589,9 +582,9 @@ void sfs_mkdir(const char *org_path)
 
 	disk_read(&si, sd_cwd.sfd_ino); //디스크로부터 현재 디렉터리의 inode 읽어옴
 	//for consistency
-	assert(si.sfi_type == SFS_TYPE_DIR); //유효한 inode인지 판별. 아니라면 종료됨.
+	assert(si.sfi_type == SFS_TYPE_DIR); //유효한 inode인지 검증. 아니라면 종료됨.
 
-	nsd = si.sfi_size / sizeof(struct sfs_dir); //nsd=si.sfi_size/sizeof(struct sfs_dir); //nsd은 해당 inode의 디렉토리 엔트리 수
+	nsd = si.sfi_size / sizeof(struct sfs_dir); //nsd은 해당 inode의 디렉토리 엔트리 수
 	k = nsd / SFS_DENTRYPERBLOCK;				//k번째 다이렉트 사용
 	l = nsd % SFS_DENTRYPERBLOCK;				//k번째 다이렉트에 l개 엔트리 있음
 
@@ -615,13 +608,12 @@ void sfs_mkdir(const char *org_path)
 	}
 
 	if (l > 0)
-	{									 //block access
-										 //disk_read( sd, si.sfi_direct[0] ); //해당 inode의 direct배열을 sd로 가져옴. sd[0]은 현재 디렉토리,sd[1]은 부모 디렉토리
+	{ //block access
+		//해당 inode의 direct배열을 sd로 가져옴. sd[0]은 현재 디렉토리,sd[1]은 부모 디렉토리
 		disk_read(sd, si.sfi_direct[k]); //현재 디렉토리의 디렉토리엔트리들 read
 
 		for (i = 0; i < l; i++) //같은 이름의 파일이나 디렉토리가 있는지 찾는 loop
 		{
-			//disk_read( &si_tmp, sd[i].sfd_ino );
 			if (!strcmp(sd[i].sfd_name, org_path))
 			{
 				//같은 이름의 파일이나 디렉토리가 있음
@@ -641,9 +633,9 @@ void sfs_mkdir(const char *org_path)
 	if (l == 0)
 	{
 		si.sfi_direct[k] = getBbnum();
+		//가용 블락이 없는 경우 에러,종료
 		if (si.sfi_direct[k] == -1)
 		{
-			//가용 블락이 없는 경우 에러,종료
 			error_message("mkdir", org_path, -4);
 			return;
 		}
@@ -655,7 +647,6 @@ void sfs_mkdir(const char *org_path)
 			sd[i].sfd_name[0] = '\0';
 		}
 		disk_write(sd, si.sfi_direct[k]);
-		//spb.sp_nblocks++; //전체 데이터블록 1개 추가
 	}
 
 	newbie_ino = getBbnum();
@@ -666,31 +657,30 @@ void sfs_mkdir(const char *org_path)
 		return;
 	}
 
-	//부모 디텍토리에 대한 조정 코드 st
+	//부모 디텍토리에 대한 조정 코드 start
 	si.sfi_size += sizeof(struct sfs_dir);
 	disk_write(&si, sd_cwd.sfd_ino);
 
-	disk_read(sd, si.sfi_direct[k]); //현재 디렉토리의 디렉토리엔트리들 read
-	sd[l].sfd_ino = newbie_ino;		 //새로 할당된 디렉토리의 inode#할당
-	//strcpy(sd[i].sfd_name,org_path);
+	disk_read(sd, si.sfi_direct[k]);				//현재 디렉토리의 디렉토리엔트리들 read
+	sd[l].sfd_ino = newbie_ino;						//새로 할당된 디렉토리의 inode#할당
 	strncpy(sd[l].sfd_name, org_path, SFS_NAMELEN); //(복사받는 문자열, 복사할 문자열)
 	disk_write(sd, si.sfi_direct[k]);
-	//spb.sp_nblocks++; //전체 데이터블록 1개 추가
-	//부모 디텍토리에 대한 조정 코드 ed
+	//부모 디텍토리에 대한 조정 코드 end
 
-	//새로 생긴 디렉토리에 대한 조정코드 st
+	//새로 생긴 디렉토리에 대한 조정코드 start
 	disk_read(&si_tmp, sd[l].sfd_ino);
 	bzero(&si_tmp, SFS_BLOCKSIZE); // initalize sfi_direct[] and sfi_indirect
 	si_tmp.sfi_size = 2 * (sizeof(struct sfs_dir));
 	si_tmp.sfi_type = SFS_TYPE_DIR;
 	si_tmp.sfi_direct[0] = getBbnum();
+
+	//가용 블락이 없는 경우 에러,종료
 	if (si_tmp.sfi_direct[0] == -1)
 	{
-		//가용 블락이 없는 경우 에러,종료
 		error_message("mkdir", org_path, -4);
 		return;
 	}
-	//spb.sp_nblocks++; //전체 데이터블록 1개 추가
+
 	disk_write(&si_tmp, sd[l].sfd_ino);
 
 	disk_read(sd_tmp, si_tmp.sfi_direct[0]);
@@ -713,17 +703,13 @@ void sfs_mkdir(const char *org_path)
 		sd_tmp[i].sfd_name[0] = '\0';
 	}
 	disk_write(sd_tmp, si_tmp.sfi_direct[0]);
-	//새로 생긴 디렉토리에 대한 조정코드 ed
+	//새로 생긴 디렉토리에 대한 조정코드 end
 
 	return;
 }
 
 void sfs_rmdir(const char *org_path)
 {
-	//printf("Not Implemented\n");
-
-	//현재(sd_cwd)디렉토리에서 org_path 탐색
-
 	int i, j, k, l, nsd, nsd_tmp, inodenum = sd_cwd.sfd_ino;
 
 	//buffer for disk read
@@ -752,14 +738,13 @@ void sfs_rmdir(const char *org_path)
 			//block access
 			disk_read(sd, si.sfi_direct[j]); //현재 디렉토리 엔트리 배열을 sd로 가져옴. sd[0]은 현재 디렉토리,sd[1]은 부모 디렉토리
 
+			//현재(sd_cwd)디렉토리에서 org_path 탐색
 			for (i = 0; i < SFS_DENTRYPERBLOCK; i++)
 			{
 				disk_read(&si_tmp, sd[i].sfd_ino);
 				if (!strcmp(sd[i].sfd_name, org_path)) //원하는 디렉토리 찾음
 				{
 					//block access
-					//disk_read( sd_tmp, si_tmp.sfi_direct[0] );
-
 					if (si_tmp.sfi_type == SFS_TYPE_FILE)
 					{
 						//해당 org_path 디렉토리가 아님
@@ -770,7 +755,7 @@ void sfs_rmdir(const char *org_path)
 					{
 						if (si_tmp.sfi_size / sizeof(struct sfs_dir) > 2)
 						{
-							//해당 디렉토리가 안 비어있음
+							//해당 디렉토리가 차있음
 							error_message("rmdir", org_path, -7);
 							return;
 						}
@@ -824,7 +809,6 @@ void sfs_rmdir(const char *org_path)
 							si.sfi_size -= sizeof(struct sfs_dir);
 							disk_write(&si, sd_cwd.sfd_ino);
 
-							//spb.sp_nblocks--;
 							return;
 						}
 					}
@@ -841,7 +825,6 @@ void sfs_rmdir(const char *org_path)
 			if (!strcmp(sd[i].sfd_name, org_path)) //원하는 디렉토리 찾음
 			{
 				//block access
-				//disk_read( sd_tmp, si_tmp.sfi_direct[0] );
 
 				if (si_tmp.sfi_type == SFS_TYPE_FILE)
 				{
@@ -907,7 +890,6 @@ void sfs_rmdir(const char *org_path)
 						si.sfi_size -= sizeof(struct sfs_dir);
 						disk_write(&si, sd_cwd.sfd_ino);
 
-						//spb.sp_nblocks--;
 						return;
 					}
 				}
@@ -920,8 +902,6 @@ void sfs_rmdir(const char *org_path)
 
 void sfs_mv(const char *src_name, const char *dst_name)
 {
-	//printf("Not Implemented\n");
-
 	int i, j, k, l, nsd, inodenum = sd_cwd.sfd_ino;
 
 	//buffer for disk read
@@ -941,7 +921,7 @@ void sfs_mv(const char *src_name, const char *dst_name)
 		//for consistency
 		assert(si.sfi_type == SFS_TYPE_DIR); //디렉토리 타입인지 판별. 아니라면 종료됨.
 
-		nsd = si.sfi_size / sizeof(struct sfs_dir); //nsd=si.sfi_size/sizeof(struct sfs_dir); //nsd은 해당 inode의 디렉토리 엔트리 수
+		nsd = si.sfi_size / sizeof(struct sfs_dir); //nsd은 해당 inode의 디렉토리 엔트리 수
 		k = nsd / SFS_DENTRYPERBLOCK;				//k-1번째 다이렉트 사용
 		l = nsd % SFS_DENTRYPERBLOCK;				//k-1번째 다이렉트에 l개 엔트리 있음
 
@@ -954,7 +934,6 @@ void sfs_mv(const char *src_name, const char *dst_name)
 
 			for (i = 0; i < SFS_DENTRYPERBLOCK; i++)
 			{
-				//disk_read( &si_tmp,sd[i].sfd_ino );
 				if (!strcmp(sd[i].sfd_name, dst_name))
 				{
 					//dst_name가 이미 존재하는 경우가 있으면 에러메시지
@@ -988,11 +967,9 @@ void sfs_mv(const char *src_name, const char *dst_name)
 			disk_read(sd, si.sfi_direct[j]);
 			for (i = 0; i < SFS_DENTRYPERBLOCK; i++)
 			{
-				//disk_read( &si_tmp,sd[i].sfd_ino );
 				if (!strcmp(sd[i].sfd_name, src_name))
 				{
 					bzero(sd[i].sfd_name, SFS_NAMELEN);
-					//strcpy(sd[i].sfd_name,dst_name); //dst_name에 해당하는 디렉토리 이름을 sd_cwd에 복사
 					strncpy(sd[i].sfd_name, dst_name, SFS_NAMELEN); //(복사받는 문자열, 복사할 문자열)
 					disk_write(sd, si.sfi_direct[j]);
 					disk_write(&si, sd_cwd.sfd_ino);
@@ -1004,12 +981,10 @@ void sfs_mv(const char *src_name, const char *dst_name)
 		disk_read(sd, si.sfi_direct[k]);
 		for (i = 0; i < l; i++)
 		{
-			//disk_read( &si_tmp,sd[i].sfd_ino );
 			if (!strcmp(sd[i].sfd_name, src_name))
 			{
 				bzero(sd[i].sfd_name, SFS_NAMELEN);
-				//strcpy(sd[i].sfd_name,dst_name); //dst_name에 해당하는 디렉토리 이름을 sd_cwd에 복사
-				strncpy(sd[i].sfd_name, dst_name, SFS_NAMELEN); //(복사받는 문자열, 복사할 문자열)
+				strncpy(sd[i].sfd_name, dst_name, SFS_NAMELEN); //dst_name에 해당하는 디렉토리 이름을 sd_cwd에 복사 (복사받는 문자열, 복사할 문자열)
 				disk_write(sd, si.sfi_direct[k]);
 				disk_write(&si, sd_cwd.sfd_ino);
 				return;
@@ -1045,7 +1020,7 @@ void sfs_rm(const char *path)
 		//for consistency
 		assert(si.sfi_type == SFS_TYPE_DIR); //유효한 inode인지 판별. 아니라면 종료됨.
 
-		nsd = si.sfi_size / sizeof(struct sfs_dir); //nsd=si.sfi_size/sizeof(struct sfs_dir); //nsd은 해당 inode의 디렉토리 엔트리 수
+		nsd = si.sfi_size / sizeof(struct sfs_dir); //nsd은 해당 inode의 디렉토리 엔트리 수
 		k = nsd / SFS_DENTRYPERBLOCK;				//k-1번째 다이렉트 사용
 		l = nsd % SFS_DENTRYPERBLOCK;				//k-1번째 다이렉트에 l개 엔트리 있음
 
@@ -1160,8 +1135,6 @@ void sfs_rm(const char *path)
 							rd = si_tmp.sfi_direct[k] % 8;
 							BIT_CLEAR(sb.sfb_bytes[qt], rd);
 							disk_write(&sb, bbnum_tmp);
-
-							//spb.sp_nblocks--;
 						}
 					}
 
@@ -1199,10 +1172,6 @@ void sfs_rm(const char *path)
 					return;
 				}
 			}
-			/*if(si_tmp.sfi_type == SFS_TYPE_DIR)
-				{
-					qarr[++idx]=sd[i].sfd_ino;//푸쉬. q.push(sd[i].sfd_ino);
-				}*/
 		}
 	}
 	//해당 파일이 존재하지 않음
@@ -1211,8 +1180,6 @@ void sfs_rm(const char *path)
 
 void sfs_cpin(const char *local_path, const char *path)
 {
-	//printf("Not Implemented\n");
-
 	struct sfs_inode si, si_btmp, newbie;							   //,si_tmp;
 	struct sfs_dir sd[SFS_DENTRYPERBLOCK], sd_tmp[SFS_DENTRYPERBLOCK]; //디렉토리 엔트리 배열
 	struct sfs_btmp sb;
@@ -1221,6 +1188,7 @@ void sfs_cpin(const char *local_path, const char *path)
 	int swch = 0, count_buf = 0, count_dir = 0, count_indir = 0, total_buf = 0;
 	int newbie_ino = -1, ino_tmp = -1;
 	FILE *fp;
+
 	//direct block 1개당 512B 총15개.
 	//indirect block 1개있고 512/4개의 엔트리(=direct block), 엔트리당 512B.
 	char buf[SFS_BLOCKSIZE]; // 블록하나에 512B. dir<=7680B, indir<=64KB . 7680+64*1024
@@ -1229,7 +1197,7 @@ void sfs_cpin(const char *local_path, const char *path)
 	//for consistency
 	assert(si.sfi_type == SFS_TYPE_DIR); //si가 디렉토리의 inode인지
 
-	nsd = si.sfi_size / sizeof(struct sfs_dir); //nsd=si.sfi_size/sizeof(struct sfs_dir); //nsd은 해당 inode의 디렉토리 엔트리 수
+	nsd = si.sfi_size / sizeof(struct sfs_dir); //nsd은 해당 inode의 디렉토리 엔트리 수
 	k = nsd / SFS_DENTRYPERBLOCK;				//k번째 다이렉트 사용, SFS_DENTRYPERBLOCK=8
 	l = nsd % SFS_DENTRYPERBLOCK;				//k번째 다이렉트에 l개 엔트리 있음
 
@@ -1311,12 +1279,11 @@ void sfs_cpin(const char *local_path, const char *path)
 	bzero(&newbie, SFS_BLOCKSIZE); // initalize sfi_direct[] and sfi_indirect
 	newbie.sfi_size = 0;
 	newbie.sfi_type = SFS_TYPE_FILE;
-	//disk_write( &newbie, newbie_ino );
 
 	while (feof(fp) == 0)
 	{
 		ino_tmp = -1;
-		//한 블록크기 만큼씩 buf에 read함.
+		//한 블록 크기만큼씩 buf에 read함.
 		//count_buf는 읽어들인 크기(바이트단위)
 		count_buf = fread(buf, sizeof(char), SFS_BLOCKSIZE, fp);
 		total_buf += count_buf;
@@ -1373,7 +1340,6 @@ void sfs_cpin(const char *local_path, const char *path)
 				break;
 			}
 		}
-		//bzero(sd, SFS_DENTRYPERBLOCK*sizeof(struct sfs_dir));
 		bzero(buf, SFS_BLOCKSIZE);
 	}
 	disk_write(&newbie, newbie_ino);
@@ -1383,8 +1349,6 @@ void sfs_cpin(const char *local_path, const char *path)
 
 void sfs_cpout(const char *local_path, const char *path)
 {
-	//printf("Not Implemented\n");
-
 	struct sfs_inode si, si_tmp, newbie;							   //,si_tmp;
 	struct sfs_dir sd[SFS_DENTRYPERBLOCK], sd_tmp[SFS_DENTRYPERBLOCK]; //디렉토리 엔트리 배열
 	struct sfs_btmp sb;
@@ -1393,7 +1357,8 @@ void sfs_cpout(const char *local_path, const char *path)
 	int swch = 0, count_buf = 0, count_dir = 0, count_indir = 0, total_buf = 0;
 	int newbie_ino = -1, ino_tmp = -1, localpath_ino = -1, path_ino = -1;
 	FILE *fp;
-	//direct block 1개당 512B 총15개.
+
+	//direct block 1개당 512B, direct는 총15개.
 	//indirect block 1개있고 512/4개의 엔트리(=direct block), 엔트리당 512B.
 	char buf[SFS_BLOCKSIZE]; // 블록하나에 512B. dir<=7680B, indir<=64KB . 7680+64*1024
 
@@ -1405,7 +1370,7 @@ void sfs_cpout(const char *local_path, const char *path)
 	k = nsd / SFS_DENTRYPERBLOCK;				//k번째 다이렉트 사용, SFS_DENTRYPERBLOCK=8
 	l = nsd % SFS_DENTRYPERBLOCK;				//k번째 다이렉트에 l개 엔트리 있음
 
-	//local_path에 해당하는 파일 탐색해서 해당 파일의 inode#알아내고 탈출 st
+	//local_path에 해당하는 파일 탐색해서 해당 파일의 inode#알아내고 탈출 start
 	for (j = 0; j < k; j++)
 	{
 		//block access
@@ -1413,7 +1378,6 @@ void sfs_cpout(const char *local_path, const char *path)
 
 		for (i = 0; i < SFS_DENTRYPERBLOCK; i++)
 		{
-			//disk_read( &si_tmp,sd[i].sfd_ino );
 			if (!strcmp(sd[i].sfd_name, local_path)) //만들고자 하는 파일과 같은 이름 발견
 			{
 				localpath_ino = sd[i].sfd_ino;
@@ -1426,7 +1390,6 @@ void sfs_cpout(const char *local_path, const char *path)
 	disk_read(sd, si.sfi_direct[k]); //현재 디렉토리의 디렉토리엔트리들 read
 	for (i = 0; i < l; i++)
 	{
-		//disk_read( &si_tmp,sd[i].sfd_ino );
 		if (!strcmp(sd[i].sfd_name, local_path)) //만들고자 하는 파일과 같은 이름 발견
 		{
 			localpath_ino = sd[i].sfd_ino;
@@ -1434,7 +1397,7 @@ void sfs_cpout(const char *local_path, const char *path)
 		}
 	}
 	bzero(sd, SFS_DENTRYPERBLOCK * sizeof(struct sfs_dir));
-	//local_path에 해당하는 파일 탐색해서 해당 파일의 inode#알아내고 탈출 ed
+	//local_path에 해당하는 파일 탐색해서 해당 파일의 inode#알아내고 탈출 end
 	if (swch == 0)
 	{
 		//호스트의 파일 읽기 오류
