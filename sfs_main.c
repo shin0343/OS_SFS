@@ -11,128 +11,128 @@ int main()
 {
 	char buf[256];
 	int argc;
-	char* argv[MAX_ARGC];
+	char *argv[MAX_ARGC];
 
 	printf("OS SFS shell\n");
 
-	while(! feof(stdin))
+	while (!feof(stdin))
 	{
 		printf("os_shell> ");
 
-		fgets( buf, sizeof(buf), stdin);
-		
+		fgets(buf, sizeof(buf), stdin);
+
 		argv[0] = strtok(buf, DELIMS);
-		if( !argv[0] )
+		if (!argv[0])
 			continue;
 
 		argc = 1;
-		while((argv[argc] = strtok(NULL, DELIMS)) != NULL) {
+		while ((argv[argc] = strtok(NULL, DELIMS)) != NULL)
+		{
 			argc++;
 		}
 
-		if( !strcmp(argv[0], "mount") )
+		if (!strcmp(argv[0], "mount"))
 		{
-			if(	argc != 2 )
+			if (argc != 2)
 			{
 				printf("usage: mount disk_img\n");
 				continue;
 			}
-			
-			sfs_mount(argv[1]);			
-			continue;	
+
+			sfs_mount(argv[1]);
+			continue;
 		}
 
-		if( !strcmp(argv[0], "umount") )
+		if (!strcmp(argv[0], "umount"))
 		{
 			sfs_umount();
 			continue;
 		}
 
-		if( !strcmp(argv[0], "ls") )
+		if (!strcmp(argv[0], "ls"))
 		{
-			if( argc == 1 )
+			if (argc == 1)
 				sfs_ls(NULL);
-			else if( argc == 2 )
+			else if (argc == 2)
 				sfs_ls(argv[1]);
 			else
 			{
 				printf("usage: ls [path]\n");
 			}
-			continue;	
+			continue;
 		}
 
-		if( !strcmp(argv[0], "cd") )
+		if (!strcmp(argv[0], "cd"))
 		{
-			if( argc == 1 )
+			if (argc == 1)
 				sfs_cd(NULL);
-			else if( argc != 2 )
+			else if (argc != 2)
 			{
 				printf("usage: cd [path]\n");
 				continue;
 			}
-			
+
 			sfs_cd(argv[1]);
-			continue;	
+			continue;
 		}
 
-		if( !strcmp(argv[0], "dump") )
+		if (!strcmp(argv[0], "dump"))
 		{
 			sfs_dump();
 			continue;
 		}
 
-		if( !strcmp(argv[0], "touch") )
+		if (!strcmp(argv[0], "touch"))
 		{
-			if( argc != 2 )
+			if (argc != 2)
 			{
 				printf("usage: touch path\n");
 				continue;
 			}
 
 			sfs_touch(argv[1]);
-			continue;	
+			continue;
 		}
 
-
-		if( !strcmp(argv[0], "mkdir") )
+		if (!strcmp(argv[0], "mkdir"))
 		{
-			if( argc != 2 )
+			if (argc != 2)
 			{
 				printf("usage: mkdir directory\n");
 				continue;
 			}
 
 			sfs_mkdir(argv[1]);
-			continue;	
+			continue;
 		}
 
-		if( !strcmp(argv[0], "rmdir") )
+		if (!strcmp(argv[0], "rmdir"))
 		{
-			if( argc != 2 )
+			if (argc != 2)
 			{
 				printf("usage: rmdir directory\n");
 				continue;
 			}
 
 			sfs_rmdir(argv[1]);
-			continue;	
+			continue;
 		}
 
-		if( !strcmp(argv[0], "rm") )
+		if (!strcmp(argv[0], "rm"))
 		{
-			if( argc != 2 )
+			if (argc != 2)
 			{
 				printf("usage: rm path\n");
 				continue;
 			}
 
-			sfs_rm(argv[1]);	
-			continue;	
+			sfs_rm(argv[1]);
+			continue;
 		}
 
-		if( !strcmp(argv[0], "mv") )
+		if (!strcmp(argv[0], "mv"))
 		{
-			if( argc != 3 )
+			if (argc != 3)
 			{
 				printf("usage: mv src dst\n");
 				continue;
@@ -142,9 +142,9 @@ int main()
 			continue;
 		}
 
-		if( !strcmp(argv[0], "cpin") )
+		if (!strcmp(argv[0], "cpin"))
 		{
-			if( argc != 3 )
+			if (argc != 3)
 			{
 				printf("usage: copyin local-file file(source)\n");
 				continue;
@@ -154,9 +154,9 @@ int main()
 			continue;
 		}
 
-		if( !strcmp(argv[0], "cpout") )
+		if (!strcmp(argv[0], "cpout"))
 		{
-			if( argc != 3 )
+			if (argc != 3)
 			{
 				printf("usage: copyout local-file(source) file\n");
 				continue;
@@ -166,24 +166,24 @@ int main()
 			continue;
 		}
 
-		if( !strcmp(argv[0], "exit") )
+		if (!strcmp(argv[0], "exit"))
 		{
 			printf("bye\n");
 			return 0;
 		}
 
-		if( !strcmp(argv[0], "fsck") )
+		if (!strcmp(argv[0], "fsck"))
 		{
 			sfs_fsck();
 			continue;
 		}
 
-		if( !strcmp(argv[0], "bitmap") )
+		if (!strcmp(argv[0], "bitmap"))
 		{
 			sfs_bitmap();
 			continue;
 		}
-/*
+		/*
 		if( !strcmp(argv[0], "fixdir") )
 		{
 			sfs_fixdir();
