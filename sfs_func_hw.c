@@ -319,7 +319,7 @@ void sfs_cd(const char *path)
 			//for consistency
 			assert(si.sfi_type == SFS_TYPE_DIR); //디렉토리 타입인지 판별. 아니라면 종료됨.
 
-			nsd = si.sfi_size / sizeof(struct sfs_dir); //nsd=si.sfi_size/sizeof(struct sfs_dir); //nsd은 해당 inode의 디렉토리 엔트리 수
+			nsd = si.sfi_size / sizeof(struct sfs_dir); //nsd은 해당 inode의 디렉토리 엔트리 수
 			k = nsd / SFS_DENTRYPERBLOCK;				//k번째 다이렉트 사용
 			l = nsd % SFS_DENTRYPERBLOCK;				//k번째 다이렉트에 l개 엔트리 있음
 
@@ -377,20 +377,17 @@ void sfs_cd(const char *path)
 //1단계2
 void sfs_ls(const char *path) //매개변수: path에 대해 ls 해당하는 path 없으면 에러메시지
 {
-	//printf("sizeof(struct sfs_dir)=%dB\n",sizeof(struct sfs_dir));
-	//printf("//// 현재spb.sp_magic = %X\n",spb.sp_magic);
-	//printf("Not Implemented\n");
 	if (path == NULL)
 	{
 		int i, j, k, l, nsd;
-		struct sfs_dir sd[SFS_DENTRYPERBLOCK], sd_tmp[SFS_DENTRYPERBLOCK]; //sfs_dir구조체 배열 = 블록
+		struct sfs_dir sd[SFS_DENTRYPERBLOCK], sd_tmp[SFS_DENTRYPERBLOCK]; //sfs_dir구조체 배열 = 한 디렉토리의 엔트리들을 나타내는 자료구조
 		struct sfs_inode si, si_tmp;
 
 		disk_read(&si, sd_cwd.sfd_ino); //디스크로부터 현재 디렉터리의 inode 읽어옴
 		//for consistency
 		assert(si.sfi_type == SFS_TYPE_DIR); //유효한 inode인지 판별. 아니라면 종료됨.
 
-		nsd = si.sfi_size / sizeof(struct sfs_dir); //nsd=si.sfi_size/sizeof(struct sfs_dir); //nsd은 해당 inode의 디렉토리 엔트리 수
+		nsd = si.sfi_size / sizeof(struct sfs_dir); //nsd은 해당 inode의 디렉토리 엔트리 수
 		k = nsd / SFS_DENTRYPERBLOCK;				//k-1번째 다이렉트 사용
 		l = nsd % SFS_DENTRYPERBLOCK;				//k-1번째 다이렉트에 l개 엔트리 있음
 
